@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>config: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">go-training-restful/config/config.go (87.5%)</option>
+				
+				<option value="file1">go-training-restful/controllers/userController.go (30.0%)</option>
+				
+				<option value="file2">go-training-restful/lib/database/user.go (21.4%)</option>
+				
+				<option value="file3">go-training-restful/main.go (0.0%)</option>
+				
+				<option value="file4">go-training-restful/middlewares/basicAuthMiddleware.go (0.0%)</option>
+				
+				<option value="file5">go-training-restful/middlewares/jwtAuthMiddleware.go (0.0%)</option>
+				
+				<option value="file6">go-training-restful/routes/routes.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package config
+
+import (
+        "fmt"
+        "go-training-restful/models"
+
+        "gorm.io/driver/mysql"
+        "gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func InitDB() <span class="cov8" title="1">{
+
+        config := map[string]string{
+                "DB_Username": "root",
+                "DB_Password": "yourpassword",
+                "DB_Port":     "3306",
+                "DB_Host":     "127.0.0.1",
+                "DB_Name":     "alta",
+        }
+
+        connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&amp;parseTime=True&amp;loc=Local",
+                config["DB_Username"],
+                config["DB_Password"],
+                config["DB_Host"],
+                config["DB_Port"],
+                config["DB_Name"])
+
+        var e error
+        DB, e = gorm.Open(mysql.Open(connectionString), &amp;gorm.Config{})
+        if e != nil </span><span class="cov0" title="0">{
+                panic(e)</span>
+        }
+        <span class="cov8" title="1">InitMigrate()</span>
+}
+
+func InitMigrate() <span class="cov8" title="1">{
+        DB.AutoMigrate(&amp;models.User{})
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package controllers
+
+import (
+        "go-training-restful/lib/database"
+        "go-training-restful/models"
+        "net/http"
+
+        "github.com/labstack/echo"
+)
+
+func GetUserControllers(c echo.Context) error <span class="cov8" title="1">{
+        users, e := database.GetUsers()
+
+        if e != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+        }</span>
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, map[string]interface{}{
+                "status": "success",
+                "users":  users,
+        })</span>
+}
+
+func LoginUsersController(c echo.Context) error <span class="cov0" title="0">{
+        user := models.User{}
+        c.Bind(&amp;user)
+
+        users, e := database.LoginUsers(&amp;user)
+        if e != nil </span><span class="cov0" title="0">{
+                return echo.NewHTTPError(http.StatusBadRequest, e.Error())
+        }</span>
+        <span class="cov0" title="0">return c.JSON(http.StatusOK, users)</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package database
+
+import (
+        "go-training-restful/config"
+        "go-training-restful/middlewares"
+        "go-training-restful/models"
+)
+
+func GetUsers() (interface{}, error) <span class="cov8" title="1">{
+        var users []models.User
+
+        if err := config.DB.Find(&amp;users).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return users, nil</span>
+}
+
+func InsertUser() (interface{}, error) <span class="cov0" title="0">{
+        return nil, nil
+}</span>
+
+func LoginUsers(user *models.User) (interface{}, error) <span class="cov0" title="0">{
+
+        var err error
+        if err = config.DB.Where("email = ? AND password = ?", user.Email, user.Password).First(user).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">user.Token, err = middlewares.CreateToken(int(user.ID))
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">if err := config.DB.Save(user).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return user, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "go-training-restful/config"
+        "go-training-restful/routes"
+)
+
+func main() <span class="cov0" title="0">{
+        config.InitDB()
+        e := routes.New()
+        e.Logger.Fatal(e.Start(":8001"))
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package middlewares
+
+import (
+        "go-training-restful/config"
+        "go-training-restful/models"
+
+        "github.com/labstack/echo"
+)
+
+func BasicAuth(username, password string, c echo.Context) (bool, error) <span class="cov0" title="0">{
+        var db = config.DB
+        var user models.User
+        if err := db.Where("email = ? AND password = ?", username, password).First(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                return false, nil
+        }</span>
+
+        <span class="cov0" title="0">return true, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package middlewares
+
+import (
+        "go-training-restful/constants"
+        "time"
+
+        jwt "github.com/dgrijalva/jwt-go"
+)
+
+func CreateToken(userId int) (string, error) <span class="cov0" title="0">{
+        claims := jwt.MapClaims{}
+        claims["authorized"] = true
+        claims["userId"] = userId
+        claims["exp"] = time.Now().Add(time.Hour * 1).Unix() //Token expires after 1 hour
+        token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+        return token.SignedString([]byte(constants.SECRET))
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package routes
+
+import (
+        "go-training-restful/constants"
+        "go-training-restful/controllers"
+
+        "github.com/labstack/echo"
+        "github.com/labstack/echo/middleware"
+)
+
+func New() *echo.Echo <span class="cov0" title="0">{
+        e := echo.New()
+
+        e.POST("/login", controllers.LoginUsersController)
+
+        eAuth := e.Group("")
+        eAuth.Use(middleware.JWT([]byte(constants.SECRET)))
+        eAuth.GET("/users", controllers.GetUserControllers)
+
+        return e
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

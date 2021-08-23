@@ -1,0 +1,32 @@
+version: "2.2"
+
+services:
+  golang_alta:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+        mysql_server:
+          condition: service_healthy
+
+  mysql_server:
+    image: mariadb:10.1
+    environment:
+      MYSQL_ROOT_PASSWORD: yourpassword
+    ports:
+      - 3306:3306
+    restart: always
+    volumes:
+      - ../data/mysql:/var/lib/mysql
+      - ../mysql:/etc/mysql/conf.d
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 20s
+        retries: 10
+
+networks: 
+  default:
+    external:
+      name: my-network
